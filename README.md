@@ -26,6 +26,7 @@ Welcome to Verba: The Golden RAGtriever, an open-source application designed to 
     This command will:
 
     - Build the Docker images for both the backend and frontend.
+    - The database will be installed and stored in a Docker volume.
 
     Access the application:
 
