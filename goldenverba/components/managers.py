@@ -48,13 +48,9 @@ from goldenverba.components.chunking.SemanticChunker import SemanticChunker
 # Import Embedders
 from goldenverba.components.embedding.OpenAIEmbedder import OpenAIEmbedder
 from goldenverba.components.embedding.CohereEmbedder import CohereEmbedder
-from goldenverba.components.embedding.OllamaEmbedder import OllamaEmbedder
 from goldenverba.components.embedding.WeaviateEmbedder import WeaviateEmbedder
 from goldenverba.components.embedding.VoyageAIEmbedder import VoyageAIEmbedder
-# from goldenverba.components.embedding.CustomEmbedder import CustomEmbedder
-from goldenverba.components.embedding.SentenceTransformersEmbedder import (
-    SentenceTransformersEmbedder,
-)
+
 
 # Import Retrievers
 from goldenverba.components.retriever.WindowRetriever import WindowRetriever
@@ -62,7 +58,6 @@ from goldenverba.components.retriever.WindowRetriever import WindowRetriever
 # Import Generators
 from goldenverba.components.generation.CohereGenerator import CohereGenerator
 from goldenverba.components.generation.AnthrophicGenerator import AnthropicGenerator
-from goldenverba.components.generation.OllamaGenerator import OllamaGenerator
 from goldenverba.components.generation.OpenAIGenerator import OpenAIGenerator
 from goldenverba.components.generation.CustomGenerator import CustomGenerator
 
@@ -94,8 +89,6 @@ if production != "Production":
         JSONChunker(),
     ]
     embedders = [
-        OllamaEmbedder(),
-        SentenceTransformersEmbedder(),
         WeaviateEmbedder(),
         VoyageAIEmbedder(),
         CohereEmbedder(),
@@ -104,7 +97,6 @@ if production != "Production":
     ]
     retrievers = [WindowRetriever()]
     generators = [
-        OllamaGenerator(),
         OpenAIGenerator(),
         AnthropicGenerator(),
         CohereGenerator(),
@@ -156,18 +148,18 @@ class WeaviateManager:
 
     ### Connection Handling
 
-    async def connect_to_cluster(self, w_url, w_key):
-        if w_url is not None and w_key is not None:
-            msg.info(f"Connecting to Weaviate Cluster {w_url} with Auth")
-            return weaviate.use_async_with_weaviate_cloud(
-                cluster_url=w_url,
-                auth_credentials=AuthApiKey(w_key),
-                additional_config=AdditionalConfig(
-                    timeout=Timeout(init=60, query=300, insert=300)
-                ),
-            )
-        else:
-            raise Exception("No URL or API Key provided")
+    # async def connect_to_cluster(self, w_url, w_key):
+    #     if w_url is not None and w_key is not None:
+    #         msg.info(f"Connecting to Weaviate Cluster {w_url} with Auth")
+    #         return weaviate.use_async_with_weaviate_cloud(
+    #             cluster_url=w_url,
+    #             auth_credentials=AuthApiKey(w_key),
+    #             additional_config=AdditionalConfig(
+    #                 timeout=Timeout(init=60, query=300, insert=300)
+    #             ),
+    #         )
+    #     else:
+    #         raise Exception("No URL or API Key provided")
 
     async def connect_to_docker(self, w_url):
         msg.info(f"Connecting to Weaviate Docker")
@@ -178,31 +170,33 @@ class WeaviateManager:
             ),
         )
 
-    async def connect_to_embedded(self):
-        msg.info(f"Connecting to Weaviate Embedded")
-        return weaviate.use_async_with_embedded(
-            additional_config=AdditionalConfig(
-                timeout=Timeout(init=60, query=300, insert=300)
-            )
-        )
+    # async def connect_to_embedded(self):
+    #     msg.info(f"Connecting to Weaviate Embedded")
+    #     return weaviate.use_async_with_embedded(
+    #         additional_config=AdditionalConfig(
+    #             timeout=Timeout(init=60, query=300, insert=300)
+    #         )
+    #     )
 
     async def connect(
         self, deployment: str, weaviateURL: str, weaviateAPIKey: str
     ) -> WeaviateAsyncClient:
         try:
 
-            if deployment == "Weaviate":
-                if weaviateURL == "" and os.environ.get("WEAVIATE_URL_VERBA"):
-                    weaviateURL = os.environ.get("WEAVIATE_URL_VERBA")
+            # if deployment == "Weaviate":
+            #     if weaviateURL == "" and os.environ.get("WEAVIATE_URL_VERBA"):
+            #         weaviateURL = os.environ.get("WEAVIATE_URL_VERBA")
 
-                if weaviateAPIKey == "" and os.environ.get("WEAVIATE_API_KEY_VERBA"):
-                    weaviateAPIKey = os.environ.get("WEAVIATE_API_KEY_VERBA")
+            #     if weaviateAPIKey == "" and os.environ.get("WEAVIATE_API_KEY_VERBA"):
+            #         weaviateAPIKey = os.environ.get("WEAVIATE_API_KEY_VERBA")
 
-                client = await self.connect_to_cluster(weaviateURL, weaviateAPIKey)
-            elif deployment == "Docker":
-                client = await self.connect_to_docker("weaviate")
-            elif deployment == "Local":
-                client = await self.connect_to_embedded()
+            #     client = await self.connect_to_cluster(weaviateURL, weaviateAPIKey)
+            # elif deployment == "Docker":
+            #     client = await self.connect_to_docker("weaviate")
+            # elif deployment == "Local":
+            #     client = await self.connect_to_embedded()
+
+            client = await self.connect_to_docker("weaviate")
 
             if client is not None:
                 await client.connect()

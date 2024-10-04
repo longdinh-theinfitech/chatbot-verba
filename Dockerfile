@@ -1,5 +1,5 @@
 FROM python:3.11
-WORKDIR /Verba
+WORKDIR /chatbot-verba
 
 # Tạo môi trường ảo trong container
 RUN python -m venv /opt/venv
@@ -8,7 +8,7 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy code vào container
-COPY . /Verba
+COPY . /chatbot-verba
 
 # Cài đặt thư viện từ môi trường ảo
 RUN pip install -e .
