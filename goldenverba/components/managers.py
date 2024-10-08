@@ -47,17 +47,13 @@ from goldenverba.components.chunking.SemanticChunker import SemanticChunker
 
 # Import Embedders
 from goldenverba.components.embedding.OpenAIEmbedder import OpenAIEmbedder
-from goldenverba.components.embedding.CohereEmbedder import CohereEmbedder
-from goldenverba.components.embedding.WeaviateEmbedder import WeaviateEmbedder
-from goldenverba.components.embedding.VoyageAIEmbedder import VoyageAIEmbedder
+from goldenverba.components.embedding.CustomEmbedder import CustomEmbedder
 
 
 # Import Retrievers
 from goldenverba.components.retriever.WindowRetriever import WindowRetriever
 
 # Import Generators
-from goldenverba.components.generation.CohereGenerator import CohereGenerator
-from goldenverba.components.generation.AnthrophicGenerator import AnthropicGenerator
 from goldenverba.components.generation.OpenAIGenerator import OpenAIGenerator
 from goldenverba.components.generation.CustomGenerator import CustomGenerator
 
@@ -89,17 +85,17 @@ if production != "Production":
         JSONChunker(),
     ]
     embedders = [
-        WeaviateEmbedder(),
-        VoyageAIEmbedder(),
-        CohereEmbedder(),
+        # WeaviateEmbedder(),
+        # VoyageAIEmbedder(),
+        # CohereEmbedder(),
         OpenAIEmbedder(),
-        # CustomEmbedder(),
+        CustomEmbedder(),
     ]
     retrievers = [WindowRetriever()]
     generators = [
         OpenAIGenerator(),
-        AnthropicGenerator(),
-        CohereGenerator(),
+        # AnthropicGenerator(),
+        # CohereGenerator(),
         CustomGenerator(),
     ]
 else:
@@ -121,17 +117,17 @@ else:
         JSONChunker(),
     ]
     embedders = [
-        WeaviateEmbedder(),
-        VoyageAIEmbedder(),
-        CohereEmbedder(),
+        # WeaviateEmbedder(),
+        # VoyageAIEmbedder(),
+        # CohereEmbedder(),
         OpenAIEmbedder(),
-        # CustomEmbedder(),
+        CustomEmbedder(),
     ]
     retrievers = [WindowRetriever()]
     generators = [
         OpenAIGenerator(),
-        AnthropicGenerator(),
-        CohereGenerator(),
+        # AnthropicGenerator(),
+        # CohereGenerator(),
         CustomGenerator(),
     ]
 
