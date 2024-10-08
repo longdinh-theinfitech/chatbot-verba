@@ -20,7 +20,7 @@ class OpenAIEmbedder(Embedding):
         self.description = "Vectorizes documents and queries using OpenAI"
 
         # Fetch available models
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = os.getenv("OPENAI_API_KEY", "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")
         base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
         models = self.get_models(api_key, base_url)
 
@@ -35,10 +35,10 @@ class OpenAIEmbedder(Embedding):
         }
 
         # Add API Key and URL configs if not set in environment
-        if api_key is None:
+        if os.getenv("OPENAI_API_KEY") is None:
             self.config["API Key"] = InputConfig(
                 type="password",
-                value="",
+                value=api_key,
                 description="OpenAI API Key (or set OPENAI_API_KEY env var)",
                 values=[],
             )

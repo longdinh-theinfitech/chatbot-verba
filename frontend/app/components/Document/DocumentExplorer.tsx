@@ -203,20 +203,6 @@ const DocumentExplorer: React.FC<DocumentExplorerProps> = ({
               }}
             />
           )}
-          {/* {!documentFilter.some((filter) => filter.uuid === selectedDocument) &&
-            document && (
-              <VerbaButton
-                title="Add to Chat"
-                Icon={IoMdAddCircle}
-                onClick={() => {
-                  setDocumentFilter([
-                    ...documentFilter,
-                    { uuid: selectedDocument, title: document.title },
-                  ]);
-                  addStatusMessage("Added document to Chat", "SUCCESS");
-                }}
-              />
-            )} */}
         </div>
         <div className="flex gap-3">
           {selectedDocument && document && document.source && (

@@ -12,6 +12,7 @@ import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from "react-icons/fa";
 import InfoComponent from "../Navigation/InfoComponent";
 import UserModalComponent from "../Navigation/UserModal";
 import VerbaButton from "../Navigation/VerbaButton";
+import AuthenModal from "../Navigation/AuthenModal";
 import { IoMdAddCircle } from "react-icons/io";
 
 interface DocumentSearchComponentProps {
@@ -147,6 +148,14 @@ const DocumentSearch: React.FC<DocumentSearchComponentProps> = ({
         setSelectedLabels((prev) => prev.filter((label) => label !== l));
     };
 
+
+    const openAuthenModal = (id: string) => {
+        const modal = document.getElementById(id);
+        if (modal instanceof HTMLDialogElement) {
+            modal.showModal();
+        }
+    }
+
     const openDeleteModal = (id: string) => {
         const modal = document.getElementById(id);
         if (modal instanceof HTMLDialogElement) {
@@ -278,11 +287,21 @@ const DocumentSearch: React.FC<DocumentSearchComponentProps> = ({
                                             className="max-w-min"
                                             key={document.title + index + "delete"}
                                             onClick={() => {
-                                                openDeleteModal("remove_document" + document.uuid);
+                                                openAuthenModal("authen_file" + document.uuid);
                                             }}
                                         />
                                     )}
                                 </div>
+
+                                <AuthenModal
+                                    modal_id={"authen_file" + document.uuid}
+                                    title={"Remove File"}
+                                    text="Enter authenticate password to remove the file"
+                                    triggerString="Submit"
+                                    triggerValue={document.uuid}
+                                    triggerAccept={() => openDeleteModal("remove_document" + document.uuid)}
+                                />
+                            
                                 <UserModalComponent
                                     modal_id={"remove_document" + document.uuid}
                                     title={"Remove Document"}

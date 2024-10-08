@@ -44,9 +44,9 @@ const ChatView: React.FC<ChatViewProps> = ({
     []
   );
   return (
-    <div className="flex md:flex-row flex-col justify-center gap-3 h-[50vh] md:h-[80vh] ">
+    <div className="flex md:flex-row flex-col justify-center gap-3 h-[60vh] md:h-[80vh] ">
       <div
-        className={`${selectedDocument ? "hidden md:flex md:w-[45vw]" : "w-full md:w-[45vw] md:flex"}`}
+        className="md:flex xs:w-[45vw] w-[85%]"
       >
         <ChatInterface
           addStatusMessage={addStatusMessage}
@@ -60,22 +60,6 @@ const ChatView: React.FC<ChatViewProps> = ({
           setRAGConfig={setRAGConfig}
           documentFilter={documentFilter}
           setDocumentFilter={setDocumentFilter}
-        />
-      </div>
-
-      <div
-        className={`${selectedDocument ? "md:w-[55vw] w-full flex" : "hidden md:flex md:w-[55vw]"}`}
-      >
-        <DocumentExplorer
-          addStatusMessage={addStatusMessage}
-          credentials={credentials}
-          production={production}
-          documentFilter={documentFilter}
-          setDocumentFilter={setDocumentFilter}
-          setSelectedDocument={setSelectedDocument}
-          selectedTheme={selectedTheme}
-          selectedDocument={selectedDocument}
-          chunkScores={selectedChunkScore}
         />
       </div>
     </div>

@@ -149,7 +149,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- PDFReader powered by PyPDF2
+- PDFReader powered by PyMuPDF
 - TokenChunker powered by tiktoken
 - Ruff Linting (set as pre-commit)
 - Markdown Formatting for chat messages (https://github.com/weaviate/Verba/issues/48)
