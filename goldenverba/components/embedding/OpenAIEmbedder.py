@@ -18,9 +18,9 @@ class OpenAIEmbedder(Embedding):
         super().__init__()
         self.name = "OpenAI"
         self.description = "Vectorizes documents and queries using OpenAI"
-
+        
         # Fetch available models
-        api_key = os.getenv("OPENAI_API_KEY", "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")
+        api_key = os.getenv("OPENAI_API_KEY", "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")
         base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
         models = self.get_models(api_key, base_url)
 

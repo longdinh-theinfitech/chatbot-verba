@@ -32,7 +32,7 @@ class OpenAIGenerator(Generator):
         if os.getenv("OPENAI_API_KEY") is None:
             self.config["API Key"] = InputConfig(
                 type="password",
-                value="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",
+                value="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",
                 description="You can set your OpenAI API Key here or set it as environment variable `OPENAI_API_KEY`",
                 values=[],
             )
