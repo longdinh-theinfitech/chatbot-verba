@@ -20,7 +20,7 @@ class CustomGenerator(Generator):
         try:
             models = getLocalModels()
         except:
-            models = ["codestral:latest"]
+            models = ["Cannot fetch available models"]
         
         self.config["Model"] = InputConfig(
             type="dropdown",

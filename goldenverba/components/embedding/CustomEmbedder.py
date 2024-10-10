@@ -106,7 +106,7 @@ class CustomEmbedder(Embedding):
         """Fetch available embedding models from OpenAI API."""
         if token is None:
             return [
-                "nomic-embed-text:latest"
+                "Cannot fetch available models"
             ]
 
         import requests  # Import here to avoid dependency if not needed
