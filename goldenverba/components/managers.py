@@ -12,6 +12,7 @@ import os
 import asyncio
 import json
 import re
+from urllib.parse import urlparse
 from datetime import datetime
 
 from sklearn.decomposition import PCA
@@ -32,6 +33,7 @@ from goldenverba.server.types import FileConfig, FileStatus
 from goldenverba.components.reader.BasicReader import BasicReader
 from goldenverba.components.reader.GitReader import GitReader
 from goldenverba.components.reader.UnstructuredAPI import UnstructuredReader
+from goldenverba.components.reader.AssemblyAIAPI import AssemblyAIReader
 from goldenverba.components.reader.HTMLReader import HTMLReader
 from goldenverba.components.reader.FirecrawlReader import FirecrawlReader
 
@@ -48,7 +50,9 @@ from goldenverba.components.chunking.SemanticChunker import SemanticChunker
 # Import Embedders
 from goldenverba.components.embedding.OpenAIEmbedder import OpenAIEmbedder
 from goldenverba.components.embedding.CustomEmbedder import CustomEmbedder
-
+from goldenverba.components.embedding.SentenceTransformersEmbedder import (
+    SentenceTransformersEmbedder,
+)
 
 # Import Retrievers
 from goldenverba.components.retriever.WindowRetriever import WindowRetriever
@@ -56,7 +60,6 @@ from goldenverba.components.retriever.WindowRetriever import WindowRetriever
 # Import Generators
 from goldenverba.components.generation.OpenAIGenerator import OpenAIGenerator
 from goldenverba.components.generation.CustomGenerator import CustomGenerator
-
 
 try:
     import tiktoken
@@ -85,17 +88,12 @@ if production != "Production":
         JSONChunker(),
     ]
     embedders = [
-        # WeaviateEmbedder(),
-        # VoyageAIEmbedder(),
-        # CohereEmbedder(),
         OpenAIEmbedder(),
         CustomEmbedder(),
     ]
     retrievers = [WindowRetriever()]
     generators = [
         OpenAIGenerator(),
-        # AnthropicGenerator(),
-        # CohereGenerator(),
         CustomGenerator(),
     ]
 else:
@@ -117,20 +115,14 @@ else:
         JSONChunker(),
     ]
     embedders = [
-        # WeaviateEmbedder(),
-        # VoyageAIEmbedder(),
-        # CohereEmbedder(),
         OpenAIEmbedder(),
         CustomEmbedder(),
     ]
     retrievers = [WindowRetriever()]
     generators = [
         OpenAIGenerator(),
-        # AnthropicGenerator(),
-        # CohereGenerator(),
         CustomGenerator(),
     ]
-
 
 ### ----------------------- ###
 
@@ -144,18 +136,18 @@ class WeaviateManager:
 
     ### Connection Handling
 
-    # async def connect_to_cluster(self, w_url, w_key):
-    #     if w_url is not None and w_key is not None:
-    #         msg.info(f"Connecting to Weaviate Cluster {w_url} with Auth")
-    #         return weaviate.use_async_with_weaviate_cloud(
-    #             cluster_url=w_url,
-    #             auth_credentials=AuthApiKey(w_key),
-    #             additional_config=AdditionalConfig(
-    #                 timeout=Timeout(init=60, query=300, insert=300)
-    #             ),
-    #         )
-    #     else:
-    #         raise Exception("No URL or API Key provided")
+    async def connect_to_cluster(self, w_url, w_key):
+        if w_url is not None and w_key is not None:
+            msg.info(f"Connecting to Weaviate Cluster {w_url} with Auth")
+            return weaviate.use_async_with_weaviate_cloud(
+                cluster_url=w_url,
+                auth_credentials=AuthApiKey(w_key),
+                additional_config=AdditionalConfig(
+                    timeout=Timeout(init=60, query=300, insert=300)
+                ),
+            )
+        else:
+            raise Exception("No URL or API Key provided")
 
     async def connect_to_docker(self, w_url):
         msg.info(f"Connecting to Weaviate Docker")
@@ -166,33 +158,60 @@ class WeaviateManager:
             ),
         )
 
-    # async def connect_to_embedded(self):
-    #     msg.info(f"Connecting to Weaviate Embedded")
-    #     return weaviate.use_async_with_embedded(
-    #         additional_config=AdditionalConfig(
-    #             timeout=Timeout(init=60, query=300, insert=300)
-    #         )
-    #     )
+    async def connect_to_custom(self, host, w_key, port):
+        # Extract the port from the host
+        msg.info(f"Connecting to Weaviate Custom")
+
+        if host is None or host == "":
+            raise Exception("No Host URL provided")
+
+        if w_key is None or w_key == "":
+            return weaviate.use_async_with_local(
+                host=host,
+                port=int(port),
+                skip_init_checks=True,
+                additional_config=AdditionalConfig(
+                    timeout=Timeout(init=60, query=300, insert=300)
+                ),
+            )
+        else:
+            return weaviate.use_async_with_local(
+                host=host,
+                port=int(port),
+                skip_init_checks=True,
+                auth_credentials=AuthApiKey(w_key),
+                additional_config=AdditionalConfig(
+                    timeout=Timeout(init=60, query=300, insert=300)
+                ),
+            )
+
+    async def connect_to_embedded(self):
+        msg.info(f"Connecting to Weaviate Embedded")
+        return weaviate.use_async_with_embedded(
+            additional_config=AdditionalConfig(
+                timeout=Timeout(init=60, query=300, insert=300)
+            )
+        )
 
     async def connect(
-        self, deployment: str, weaviateURL: str, weaviateAPIKey: str
+        self, deployment: str, weaviateURL: str, weaviateAPIKey: str, port: str = "8080"
     ) -> WeaviateAsyncClient:
         try:
 
-            # if deployment == "Weaviate":
-            #     if weaviateURL == "" and os.environ.get("WEAVIATE_URL_VERBA"):
-            #         weaviateURL = os.environ.get("WEAVIATE_URL_VERBA")
-
-            #     if weaviateAPIKey == "" and os.environ.get("WEAVIATE_API_KEY_VERBA"):
-            #         weaviateAPIKey = os.environ.get("WEAVIATE_API_KEY_VERBA")
-
-            #     client = await self.connect_to_cluster(weaviateURL, weaviateAPIKey)
-            # elif deployment == "Docker":
-            #     client = await self.connect_to_docker("weaviate")
-            # elif deployment == "Local":
-            #     client = await self.connect_to_embedded()
-
-            client = await self.connect_to_docker("weaviate")
+            if deployment == "Weaviate":
+                if weaviateURL == "" and os.environ.get("WEAVIATE_URL_VERBA"):
+                    weaviateURL = os.environ.get("WEAVIATE_URL_VERBA")
+                if weaviateAPIKey == "" and os.environ.get("WEAVIATE_API_KEY_VERBA"):
+                    weaviateAPIKey = os.environ.get("WEAVIATE_API_KEY_VERBA")
+                client = await self.connect_to_cluster(weaviateURL, weaviateAPIKey)
+            elif deployment == "Docker":
+                client = await self.connect_to_docker("weaviate")
+            elif deployment == "Local":
+                client = await self.connect_to_embedded()
+            elif deployment == "Custom":
+                client = await self.connect_to_custom(weaviateURL, weaviateAPIKey, port)
+            else:
+                raise Exception(f"Invalid deployment type: {deployment}")
 
             if client is not None:
                 await client.connect()

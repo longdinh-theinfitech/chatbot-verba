@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] Importastic
+
+## Added
+
+- Added new deployment type: Custom
+- Added new port configuration
+- Added Groq
+
+# Fixed
+
+- Catch Exception when trying to access the OpenAI API Embedding endpoint to retrieve model names
+- Fixed reading empty string as environment variables
+- Fixed default Unstructed URL
+
 ## [2.0.0] Importastic
 
 ## Added
@@ -149,7 +163,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- PDFReader powered by PyMuPDF
+- PDFReader powered by PyPDF2
 - TokenChunker powered by tiktoken
 - Ruff Linting (set as pre-commit)
 - Markdown Formatting for chat messages (https://github.com/weaviate/Verba/issues/48)

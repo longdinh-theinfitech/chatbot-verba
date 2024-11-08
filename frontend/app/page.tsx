@@ -10,7 +10,6 @@ import IngestionView from "./components/Ingestion/IngestionView";
 import LoginView from "./components/Login/LoginView";
 import ChatView from "./components/Chat/ChatView";
 import SettingsView from "./components/Settings/SettingsView";
-import GettingStartedComponent from "./components/Login/GettingStarted";
 import StatusMessengerComponent from "./components/Navigation/StatusMessenger";
 
 // Types
@@ -206,7 +205,6 @@ export default function Home() {
             isLoaded ? "opacity-100" : "opacity-0"
           } flex flex-col gap-2 p-5`}
         >
-          <GettingStartedComponent addStatusMessage={addStatusMessage} />
 
           <div>
             <Navbar

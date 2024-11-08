@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="goldenverba",
-    version="2.0.0",
+    version="2.1.0",
     packages=find_packages(),
     python_requires=">=3.10.0",
     entry_points={
@@ -34,7 +34,7 @@ setup(
         "asyncio==3.4.3",
         "tiktoken==0.6.0",
         "requests==2.31.0",
-        "PyMuPDF==1.24.11",
+        "pypdf==4.3.1",
         "python-docx==1.1.2",
         "scikit-learn==1.5.1",
         "langchain-text-splitters==0.2.2",
@@ -42,6 +42,7 @@ setup(
         "aiohttp==3.9.5",
         "markdownify==0.13.1",
         "aiofiles==24.1.0",
+        "assemblyai==0.33.0",
         "beautifulsoup4==4.12.3",
     ],
     extras_require={

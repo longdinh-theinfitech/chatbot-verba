@@ -19,6 +19,7 @@ import { GrConnect } from "react-icons/gr";
 import { CgWebsite } from "react-icons/cg";
 import { FaBackspace } from "react-icons/fa";
 import { HiMiniSparkles } from "react-icons/hi2";
+import { TbDatabaseEdit } from "react-icons/tb";
 
 import { connectToVerba } from "@/app/api";
 
@@ -28,183 +29,192 @@ import { Credentials, RAGConfig, Theme, Themes } from "@/app/types";
 
 let prefix = "";
 if (process.env.NODE_ENV === "production") {
-    prefix = "/static";
+  prefix = "/static";
 } else {
-    prefix = "";
+  prefix = "";
 }
 
 const VerbaThree = ({
-    color,
-    useMaterial,
-    model_path,
+  color,
+  useMaterial,
+  model_path,
 }: {
-    color: string;
-    useMaterial: boolean;
-    model_path: string;
+  color: string;
+  useMaterial: boolean;
+  model_path: string;
 }) => {
-    const verba_model = useGLTF(prefix + model_path);
+  const verba_model = useGLTF(prefix + model_path);
 
-    const material = useMemo(
-        () =>
-            new THREE.MeshMatcapMaterial({
-                color: "#e6e6e6",
-                matcap: new THREE.TextureLoader().load(prefix + "/ice_cap.png"), // Add this line
-            }),
-        []
-    );
+  const material = useMemo(
+    () =>
+      new THREE.MeshMatcapMaterial({
+        color: "#e6e6e6",
+        matcap: new THREE.TextureLoader().load(prefix + "/ice_cap.png"), // Add this line
+      }),
+    []
+  );
 
-    const material1 = useMemo(
-        () =>
-            new THREE.MeshPhysicalMaterial({
-                metalness: 0.4,
-                roughness: 0.4,
-                color: "#ffe229",
-                ior: 1,
-                thickness: 1,
-                transparent: false,
-                wireframe: false,
-                clearcoat: 1,
-                clearcoatRoughness: 0.0,
-            }),
-        []
-    );
+  const material1 = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        metalness: 0.4,
+        roughness: 0.4,
+        color: "#ffe229",
+        ior: 1,
+        thickness: 1,
+        transparent: false,
+        wireframe: false,
+        clearcoat: 1,
+        clearcoatRoughness: 0.0,
+      }),
+    []
+  );
 
-    useEffect(() => {
-        const enableGUI = false; // Set this to true to re-enable the GUI
+  useEffect(() => {
+    const enableGUI = false; // Set this to true to re-enable the GUI
 
-        if (enableGUI) {
-            const gui = new GUI();
-            const materialFolder = gui.addFolder("Material");
+    if (enableGUI) {
+      const gui = new GUI();
+      const materialFolder = gui.addFolder("Material");
 
-            materialFolder.add(material, "roughness", 0, 1).name("roughness");
-            materialFolder.add(material, "metalness", 0, 1).name("metalness");
-            materialFolder.add(material, "clearcoat", 0, 1).name("clearcoat");
-            materialFolder
-                .add(material, "clearcoatRoughness", 0, 1)
-                .name("clearcoatRoughness");
-            materialFolder.addColor(material, "color").name("color");
-            return () => {
-                gui.destroy();
-            };
+      materialFolder.add(material, "roughness", 0, 1).name("roughness");
+      materialFolder.add(material, "metalness", 0, 1).name("metalness");
+      materialFolder.add(material, "clearcoat", 0, 1).name("clearcoat");
+      materialFolder
+        .add(material, "clearcoatRoughness", 0, 1)
+        .name("clearcoatRoughness");
+      materialFolder.addColor(material, "color").name("color");
+      return () => {
+        gui.destroy();
+      };
+    }
+  }, [material]);
+
+  // Apply the shiny material to all meshes in the model
+  useEffect(() => {
+    verba_model.scene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        console.log("Mesh:", child.name, "Material:", child.material);
+        if (!useMaterial) {
+          child.material = material;
+        } else {
+          child.material.roughness = 0.3;
+          child.material.metalness = 0.2;
         }
-    }, [material]);
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+  }, [verba_model, material]);
 
-    // Apply the shiny material to all meshes in the model
-    useEffect(() => {
-        verba_model.scene.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-                console.log("Mesh:", child.name, "Material:", child.material);
-                if (!useMaterial) {
-                    child.material = material;
-                } else {
-                    child.material.roughness = 0.3;
-                    child.material.metalness = 0.2;
-                }
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
-        });
-    }, [verba_model, material]);
-
-    return (
-        <>
-            <color args={[color]} attach="background" />
-            <PresentationControls
-                global
-                rotation={[0.13, 0.1, 0]}
-                polar={[-0.4, 0.2]}
-                azimuth={[-1, 0.75]}
-                config={{ mass: 2, tension: 400 }}
-                snap={{ mass: 4, tension: 400 }}
-            >
-                <Float speed={2} rotationIntensity={1}>
-                    <primitive
-                        object={verba_model.scene}
-                        position-y={0}
-                        position-x={0}
-                        rotation-y={0.2}
-                        rotation-x={-0.2}
-                        position-z={0}
-                        scale={0.6}
-                    />
-                </Float>
-            </PresentationControls>
-        </>
-    );
+  return (
+    <>
+      <color args={[color]} attach="background" />
+      <PresentationControls
+        global
+        rotation={[0.13, 0.1, 0]}
+        polar={[-0.4, 0.2]}
+        azimuth={[-1, 0.75]}
+        config={{ mass: 2, tension: 400 }}
+        snap={{ mass: 4, tension: 400 }}
+      >
+        <Float speed={2} rotationIntensity={1}>
+          <primitive
+            object={verba_model.scene}
+            position-y={0}
+            position-x={0}
+            rotation-y={0.2}
+            rotation-x={-0.2}
+            position-z={0}
+            scale={0.6}
+          />
+        </Float>
+      </PresentationControls>
+    </>
+  );
 };
 
 interface LoginViewProps {
-    credentials: Credentials;
-    setCredentials: (c: Credentials) => void;
-    setIsLoggedIn: (isLoggedIn: boolean) => void;
-    setRAGConfig: (RAGConfig: RAGConfig | null) => void;
-    setSelectedTheme: (theme: Theme) => void;
-    setThemes: (themes: Themes) => void;
-    production: "Local" | "Demo" | "Production";
+  credentials: Credentials;
+  setCredentials: (c: Credentials) => void;
+  setIsLoggedIn: (isLoggedIn: boolean) => void;
+  setRAGConfig: (RAGConfig: RAGConfig | null) => void;
+  setSelectedTheme: (theme: Theme) => void;
+  setThemes: (themes: Themes) => void;
+  production: "Local" | "Demo" | "Production";
 }
 
 const LoginView: React.FC<LoginViewProps> = ({
-    credentials,
-    setCredentials,
-    setSelectedTheme,
-    setThemes,
-    setIsLoggedIn,
-    production,
-    setRAGConfig,
+  credentials,
+  setCredentials,
+  setSelectedTheme,
+  setThemes,
+  setIsLoggedIn,
+  production,
+  setRAGConfig,
 }) => {
-    const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-    const [isConnecting, setIsConnecting] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
 
-    const [selectStage, setSelectStage] = useState(true);
+  const [selectStage, setSelectStage] = useState(true);
 
-    const [errorText, setErrorText] = useState("");
+  const [errorText, setErrorText] = useState("");
 
-    const [selectedDeployment, setSelectedDeployment] = useState<
-        "Docker"
-    >("Docker");
+  const [selectedDeployment, setSelectedDeployment] = useState<
+    "Weaviate" | "Docker" | "Local" | "Custom"
+  >("Local");
 
-    const [weaviateURL, setWeaviateURL] = useState(credentials.url);
-    const [weaviateAPIKey, setWeaviateAPIKey] = useState(credentials.key);
+  const [weaviateURL, setWeaviateURL] = useState(credentials.url);
+  const [weaviateAPIKey, setWeaviateAPIKey] = useState(credentials.key);
+  const [port, setPort] = useState("8080");
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 300); // Adjust this delay as needed
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300); // Adjust this delay as needed
 
-        return () => clearTimeout(timer);
-    }, []);
+    return () => clearTimeout(timer);
+  }, []);
 
-    const connect = async (deployment: "Docker") => {
-        setErrorText("");
-        setIsConnecting(true);
-        const response = await connectToVerba(
-            deployment,
-            weaviateURL,
-            weaviateAPIKey
+  const connect = async (
+    deployment: "Local" | "Weaviate" | "Docker" | "Custom"
+  ) => {
+    setErrorText("");
+    setIsConnecting(true);
+    const response = await connectToVerba(
+      deployment,
+      weaviateURL,
+      weaviateAPIKey,
+      port
+    );
+    if (response) {
+      if (!("error" in response)) {
+        setIsLoggedIn(false);
+        setErrorText(JSON.stringify(response));
+      } else if (response.connected == false) {
+        setIsLoggedIn(false);
+        setErrorText(
+          response.error == "" ? "Couldn't connect to Weaviate" : response.error
         );
-        if (response) {
-            if (response.error) {
-                setIsLoggedIn(false);
-                setErrorText(response.error);
-            } else {
-                setIsLoggedIn(true);
-                setCredentials({
-                    deployment: deployment,
-                    key: weaviateAPIKey,
-                    url: weaviateURL,
-                });
-                setRAGConfig(response.rag_config);
-                if (response.themes) {
-                    setThemes(response.themes);
-                }
-                if (response.theme) {
-                    setSelectedTheme(response.theme);
-                }
-            }
+      } else {
+        setIsLoggedIn(true);
+        setCredentials({
+          deployment: deployment,
+          key: weaviateAPIKey,
+          url: weaviateURL,
+        });
+        setRAGConfig(response.rag_config);
+        if (response.themes) {
+          setThemes(response.themes);
         }
-        setIsConnecting(false);
-    };
+        if (response.theme) {
+          setSelectedTheme(response.theme);
+        }
+      }
+    }
+    setIsConnecting(false);
+  };
 
     return (
         <div className="w-screen h-screen bg-white">

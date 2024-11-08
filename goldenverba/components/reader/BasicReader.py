@@ -8,12 +8,12 @@ from goldenverba.components.document import Document, create_document
 from goldenverba.components.interfaces import Reader
 from goldenverba.server.types import FileConfig
 
+# Optional imports with error handling
 try:
-    import fitz
+    from pypdf import PdfReader
 except ImportError:
-    msg.warn("pymupdf not installed, PDF functionality will be limited.")
-    fitz = None
-
+    msg.warn("pypdf not installed, PDF functionality will be limited.")
+    PdfReader = None
 
 try:
     import spacy
@@ -37,7 +37,7 @@ class BasicReader(Reader):
         super().__init__()
         self.name = "Default"
         self.description = "Ingests text, code, PDF, and DOCX files"
-        self.requires_library = ["docx", "spacy", "pymupdf"]
+        self.requires_library = ["pypdf", "docx", "spacy"]
         self.extension = [
             ".txt",
             ".py",
@@ -134,33 +134,12 @@ class BasicReader(Reader):
             raise ValueError(f"Invalid JSON in {fileConfig.filename}: {str(e)}")
 
     async def load_pdf_file(self, decoded_bytes: bytes) -> str:
-        """Load and extract text from a PDF file, keeping hyperlinks."""
-        if not fitz:
-            raise ImportError("pymupdf is not installed. Cannot process PDF files.")
-        
+        """Load and extract text from a PDF file."""
+        if not PdfReader:
+            raise ImportError("pypdf is not installed. Cannot process PDF files.")
         pdf_bytes = io.BytesIO(decoded_bytes)
-        reader = fitz.open(stream=pdf_bytes)
-        result_text = ""
-
-        for page_num in range(reader.page_count):
-            page = reader.load_page(page_num)
-            blocks = page.get_text("dict")["blocks"]
-
-            links = page.get_links()
-            for block in blocks:
-                if block['type'] == 0:
-                    for line in block['lines']:
-                        for span in line['spans']:
-                            result_text += span['text']
-
-                for link in links:
-                    try:
-                        rect = link['from']
-                        result_text += f" [Link: {link['uri']}]"
-                    except:
-                        pass
-
-        return result_text
+        reader = PdfReader(pdf_bytes)
+        return "\n\n".join(page.extract_text() for page in reader.pages)
 
     async def load_docx_file(self, decoded_bytes: bytes) -> str:
         """Load and extract text from a DOCX file."""

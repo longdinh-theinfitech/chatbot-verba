@@ -5,7 +5,6 @@ import {
   QueryPayload,
   Credentials,
   DocumentsPreviewPayload,
-  DocumentPreview,
   DocumentPayload,
   ChunkScore,
   ContentPayload,
@@ -79,7 +78,8 @@ export const fetchHealth = (): Promise<HealthPayload | null> =>
 export const connectToVerba = async (
   deployment: string,
   url: string,
-  apiKey: string
+  apiKey: string,
+  port: string
 ): Promise<ConnectPayload | null> => {
   const host = await detectHost();
   const response = await fetch(`${host}/api/connect`, {
@@ -93,6 +93,7 @@ export const connectToVerba = async (
         url: url,
         key: apiKey,
       },
+      port: port,
     }),
   });
   const data = await response.json();
@@ -113,7 +114,6 @@ export const fetchRAGConfig = async (
       body: JSON.stringify(credentials),
     });
     const data: RAGConfigResponse = await response.json();
-    console.log(data);
     return data;
   } catch (error) {
     console.error("Error retrieving content", error);
@@ -246,7 +246,7 @@ export const sendUserQuery = async (
   query: string,
   RAG: RAGConfig | null,
   labels: string[],
-  documentFilter: DocumentPreview[],
+  documentFilter: DocumentFilter[],
   credentials: Credentials
 ): Promise<QueryPayload | null> => {
   try {

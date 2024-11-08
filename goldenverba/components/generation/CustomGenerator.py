@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from goldenverba.components.interfaces import Generator
 from goldenverba.components.types import InputConfig
 from goldenverba.components.util import get_environment
+from typing import List
 import httpx
 import json
 
@@ -18,9 +19,9 @@ class CustomGenerator(Generator):
         self.context_window = 10000
 
         try:
-            models = getLocalModels()
-        except:
-            models = ["Cannot fetch available models"]
+            models = self.getLocalModels()
+        except Exception as e:
+            models = [f"Failed to fetch models: {str(e)}"]
         
         self.config["Model"] = InputConfig(
             type="dropdown",
@@ -123,9 +124,21 @@ class CustomGenerator(Generator):
 
         return messages
 
-import requests
+    @staticmethod
+    def getLocalModels(token: str, url: str) -> List[str]:
+        """Fetch available embedding models from OpenAI API."""
+        if token is None:
+            return [
+                "Cannot fetch available models"
+            ]
 
-def getLocalModels():
-    client = requests.request("GET", "http://192.168.1.107:11434/v1/models")
-    models = [model["id"] for model in client.json()["data"]]
-    return models
+        import requests  # Import here to avoid dependency if not needed
+
+        headers = {"Authorization": f"Bearer {token}"}
+        response = requests.get(f"{url}/models", headers=headers)
+        response.raise_for_status()
+        return [
+            model["id"]
+            for model in response.json()["data"]
+            if "embed" in model["id"]
+        ]

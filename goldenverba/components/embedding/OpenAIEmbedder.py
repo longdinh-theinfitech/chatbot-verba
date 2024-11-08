@@ -8,7 +8,7 @@ from wasabi import msg
 
 from goldenverba.components.interfaces import Embedding
 from goldenverba.components.types import InputConfig
-from goldenverba.components.util import get_environment
+from goldenverba.components.util import get_environment, get_token
 
 
 class OpenAIEmbedder(Embedding):
@@ -18,27 +18,29 @@ class OpenAIEmbedder(Embedding):
         super().__init__()
         self.name = "OpenAI"
         self.description = "Vectorizes documents and queries using OpenAI"
-        
+
         # Fetch available models
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = get_token("OPENAI_API_KEY")
         base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+
         try:
             models = self.get_models(api_key, base_url)
-        except:
-            models = ["text-embedding-3-small"]
+        except Exception as e:
+            models = ["Failed to fetch models. Please check your API key and URL settings."]
+            api_key = None
 
         # Set up configuration
         self.config = {
             "Model": InputConfig(
                 type="dropdown",
-                value="text-embedding-3-small",
+                value="text-embedding-3-large",
                 description="Select an OpenAI Embedding Model",
                 values=models,
             )
         }
 
         # Add API Key and URL configs if not set in environment
-        if os.getenv("OPENAI_API_KEY") is None:
+        if api_key is None:
             self.config["API Key"] = InputConfig(
                 type="password",
                 value="",
@@ -107,6 +109,7 @@ class OpenAIEmbedder(Embedding):
     @staticmethod
     def get_models(token: str, url: str) -> List[str]:
         """Fetch available embedding models from OpenAI API."""
+
         if token is None:
             return [
                 "text-embedding-ada-002",

@@ -52,11 +52,11 @@ class VerbaManager:
         self.verify_installed_libraries()
         self.verify_variables()
 
-    async def connect(self, credentials: Credentials):
+    async def connect(self, credentials: Credentials, port: str = "8080"):
         start_time = asyncio.get_event_loop().time()
         try:
             client = await self.weaviate_manager.connect(
-                credentials.deployment, credentials.url, credentials.key
+                credentials.deployment, credentials.url, credentials.key, port
             )
         except Exception as e:
             raise e
@@ -751,12 +751,14 @@ class ClientManager:
     def __init__(self) -> None:
         self.clients: dict[str, dict] = {}
         self.manager: VerbaManager = VerbaManager()
-        self.max_time: int = 1
+        self.max_time: int = 5
 
     def hash_credentials(self, credentials: Credentials) -> str:
         return f"{credentials.deployment}:{credentials.url}:{credentials.key}"
 
-    async def connect(self, credentials: Credentials) -> WeaviateAsyncClient:
+    async def connect(
+        self, credentials: Credentials, port: str = "8080"
+    ) -> WeaviateAsyncClient:
 
         _credentials = credentials
 
@@ -771,7 +773,7 @@ class ClientManager:
         else:
             msg.good("Connecting new Client")
             try:
-                client = await self.manager.connect(_credentials)
+                client = await self.manager.connect(_credentials, port)
                 self.clients[cred_hash] = {
                     "client": client,
                     "timestamp": datetime.now(),

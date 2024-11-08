@@ -76,7 +76,7 @@ const StatusMessengerComponent: React.FC<StatusMessengerProps> = ({
   };
 
   return (
-    <div className="z-10 fixed top-4 right-4 space-y-2">
+    <div className="fixed bottom-4 right-4 space-y-2">
       <AnimatePresence>
         {messages
           .filter((message) => {

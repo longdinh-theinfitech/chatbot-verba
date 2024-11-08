@@ -22,7 +22,10 @@ class CustomEmbedder(Embedding):
         # Fetch available models
         api_key = "ollama"
         base_url = "http://192.168.1.107:11434/v1"
-        models = self.get_models(api_key, base_url)
+        try:
+            models = self.getLocalModels(api_key, base_url)
+        except Exception as e:
+            models = [f"Failed to fetch models: {str(e)}"]
 
         # Set up configuration
         self.config = {
@@ -102,7 +105,7 @@ class CustomEmbedder(Embedding):
                 raise
 
     @staticmethod
-    def get_models(token: str, url: str) -> List[str]:
+    def getLocalModels(token: str, url: str) -> List[str]:
         """Fetch available embedding models from OpenAI API."""
         if token is None:
             return [

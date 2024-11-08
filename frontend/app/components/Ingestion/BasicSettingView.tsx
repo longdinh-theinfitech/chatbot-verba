@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, use } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
     FileData,
     FileMap,
@@ -8,7 +8,6 @@ import {
     statusColorMap,
     RAGComponentConfig,
     RAGConfig,
-    Credentials
 } from "@/app/types";
 import { fetchLabels } from "@/app/api";
 import VerbaButton from "../Navigation/VerbaButton";
@@ -17,11 +16,14 @@ import { IoAddCircleSharp } from "react-icons/io5";
 import { CgDebug } from "react-icons/cg";
 
 import ComponentView from "./ComponentView";
+
 import { MdError } from "react-icons/md";
 import { FaCheckCircle } from "react-icons/fa";
 import { FaCircleInfo } from "react-icons/fa6";
 import { ReactSearchAutocomplete } from 'react-search-autocomplete'
-import { set } from "date-fns";
+
+import { Credentials } from "@/app/types";
+
 
 interface BasicSettingViewProps {
     credentials: Credentials;
@@ -57,54 +59,21 @@ const BasicSettingView: React.FC<BasicSettingViewProps> = ({
     blocked,
     addStatusMessage,
 }) => {
-    const [triggerSearch, setTriggerSearch] = useState(false);
     const [filename, setFilename] = useState("");
     const [source, setSource] = useState("");
     const [metadata, setMetadata] = useState("");
     const [label, setLabel] = useState("");
-    const [items, setItems] = useState<string[]>([]);
-    const [labelsList, setLabelsList] = useState<{ id: number; name: string }[]>([]);
-
-
-    const handleOnSearch = (string: string, results: { id: number, name: string }[]) => {
-        // onSearch will have as the first callback parameter
-        // the string searched and for the second the results.
-        console.log(string, results)
-        setLabel(string);
-      }
-
-    const handleOnSelect = (item: { id: number, name: string }) => {
-        // the item selected
-        setLabel(item.name);
-    }
-
-    const formatResult = (item: { id: number, name: string }) => {
-        return (
-            <>
-                <span style={{ display: 'block', textAlign: 'left' }}>{item.name}</span>
-            </>
-        )
-    }
-
-    useEffect(() => {
-        setTriggerSearch(true);
-    }, []);
+    const [items, setItems] = useState<{ id: number; name: string }[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
-            const data = await fetchLabels(credentials);
-            setItems(data?.labels || []);
-        };
+            await fetchLabels(credentials)
+            .then((result) => {
+                setItems(result?.labels.map((name, index) => ({ id: index, name: name })) || []);
+            });
+        }
         fetchData();
-    }, [triggerSearch]);
-
-    useEffect(() => {
-        const updatedExample = items.map((item, index) => ({
-            id: index,
-            name: item
-        }));
-        setLabelsList(updatedExample);
-    }, [items]);
+    }, []);
 
     useEffect(() => {
         if (selectedFileData) {
@@ -200,6 +169,22 @@ const BasicSettingView: React.FC<BasicSettingViewProps> = ({
             setLabel("");
         }
     };
+
+    const handleOnSearch = (string: string, results: { id: number, name: string }[]) => {
+        setLabel(string);
+    }
+
+    const handleOnSelect = (item: { id: number, name: string }) => {
+        setLabel(item.name);
+    }
+
+    const formatResult = (item: { id: number, name: string }) => {
+        return (
+            <>
+                <span style={{ display: 'block', textAlign: 'left' }}>{item.name}</span>
+            </>
+        )
+    }
 
     const removeLabel = (l: string) => {
         if (
@@ -333,24 +318,6 @@ const BasicSettingView: React.FC<BasicSettingViewProps> = ({
                 {/* Labels */}
                 <div className="flex gap-2 justify-between items-center text-text-verba">
                     <p className="flex min-w-[8vw]">Labels</p>
-                    {/* <label className="input flex items-center gap-2 w-full bg-bg-verba">
-                        <input
-                            type="text"
-                            className="grow w-full"
-                            value={label}
-                            onChange={(e) => {
-                                setLabel(e.target.value);
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                    e.preventDefault();
-                                    addLabel(label);
-                                }
-                            }}
-                            disabled={blocked}
-                            title={label}
-                        />
-                    </label> */}
                     <div className="input w-full bg-bg-verba">
                         <ReactSearchAutocomplete
                             styling={
@@ -364,7 +331,7 @@ const BasicSettingView: React.FC<BasicSettingViewProps> = ({
                                 }
                             }
                             showIcon={false}
-                            items={labelsList}
+                            items={items}
                             onSearch={handleOnSearch}
                             onSelect={handleOnSelect}
                             autoFocus

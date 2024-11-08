@@ -1,11 +1,10 @@
 export type Credentials = {
-  deployment: "Weaviate" | "Docker" | "Local";
+  deployment: "Weaviate" | "Docker" | "Local" | "Custom";
   url: string;
   key: string;
 };
 
 export type DocumentFilter = {
-  activeElement: HTMLElement;
   title: string;
   uuid: string;
 };

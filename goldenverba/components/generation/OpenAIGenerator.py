@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from goldenverba.components.interfaces import Generator
 from goldenverba.components.types import InputConfig
-from goldenverba.components.util import get_environment
+from goldenverba.components.util import get_environment, get_token
 import httpx
 import json
 
@@ -20,7 +20,11 @@ class OpenAIGenerator(Generator):
         self.description = "Using OpenAI LLM models to generate answers to queries"
         self.context_window = 10000
 
+        api_key = get_token("OPENAI_API_KEY")
         models = ["gpt-4o", "gpt-3.5-turbo"]
+        check = self.test_openai_key(api_key)
+        if not check:
+            api_key = None
 
         self.config["Model"] = InputConfig(
             type="dropdown",
@@ -29,7 +33,7 @@ class OpenAIGenerator(Generator):
             values=models,
         )
 
-        if os.getenv("OPENAI_API_KEY") is None:
+        if api_key is None:
             self.config["API Key"] = InputConfig(
                 type="password",
                 value="",
@@ -118,3 +122,25 @@ class OpenAIGenerator(Generator):
         )
 
         return messages
+    
+    def test_openai_key(self, open_ai_key):
+        import requests
+        url = "https://api.openai.com/v1/chat/completions"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {open_ai_key}",
+        }
+
+        data = {
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {
+                    "role": "user",
+                    "content": "Say this is a test"
+                }
+            ],
+            "model": "gpt-4o"
+        }
+
+        response = requests.post(url, headers=headers, json=data)
+        return response.status_code == 200
